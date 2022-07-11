@@ -6,7 +6,7 @@ function App() {
 
   const [preValue, setPreValue] = useState("");
   const [currentValue, setCurrentValue] = useState("");
-  const [input, setInput] = useState("0");
+  const [screen, setScreen] = useState("0");
   const [operator, setOperator] = useState(null);
   const [total, setTotal] = useState(false);
 
@@ -24,11 +24,11 @@ function App() {
   }
 
   useEffect(() => {
-    setInput(currentValue);
+    setScreen(currentValue);
   }, [currentValue]);
 
   useEffect(()=>{
-    setInput("0");
+    setScreen("0");
   }, []);
 
   const operatorType = (evt) => {
@@ -43,9 +43,8 @@ function App() {
       }
   };
 
-
   const equals = (evt) => { 
-    if(evt?.target.innerText === "="){
+    if(evt?.target.innerText === "="){ 
       setTotal(true);
     }
 
@@ -66,7 +65,7 @@ function App() {
         default:
           return
     }
-    setInput("");
+    setScreen("");
     setPreValue(calculate);
     setCurrentValue("");
   }
@@ -80,7 +79,7 @@ function App() {
   };
 
   const percent = () => {
-    preValue 
+    preValue
       ? setCurrentValue(String((parseFloat(currentValue)/100)*preValue))
       : setCurrentValue(String(parseFloat(currentValue) / 100));
   };
@@ -88,17 +87,17 @@ function App() {
   const reset = (() => { 
     setPreValue("");
     setCurrentValue("");
-    setInput("0");
+    setScreen("0");
   })
 
   return (
     <div className='calculator'>
       <div className='wrapper'>
-        <div className='screen'> 
-          { (input !== "" || input === "0") ? 
+        <div className='screenView'> 
+          {(screen !== "" || screen === "0") ? 
             (
               <NumberFormat
-                value={input}
+                value={screen}
                 displayType={"text"}
                 thousandSeparator={true}
               />

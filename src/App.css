@@ -4,7 +4,6 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  /* -webkit-user-select: none; */
   -webkit-user-drag: none;
   -webkit-app-region: none;
 }
@@ -38,7 +37,7 @@ body {
   gap: 12px;
 }
 
-.screen {
+.screenView {
   grid-column: 1 / -1;
   color: white;
   text-align: right;
