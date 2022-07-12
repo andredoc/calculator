@@ -1,139 +1,166 @@
 import './App.css';
-import { useState, useEffect } from 'react';
-import NumberFormat from 'react-number-format';
+import DigiButton from './Components/DigitButton';
+import OperationButton from './Components/OperationButton';
+import { useReducer } from "react";
 
-function App() {
+export const ACTIONS = {
+  ADD_DIGIT: 'add-digit',
+  CHOOSE_OPERATION: 'choose-opreation',
+  CLEAR: 'clear',
+  DELETE_DIGIT: 'delete-digit',
+  EVALUATE: 'evaluate'
+}
 
-  const [preValue, setPreValue] = useState("");
-  const [currentValue, setCurrentValue] = useState("");
-  const [screen, setScreen] = useState("0");
-  const [operator, setOperator] = useState(null);
-  const [total, setTotal] = useState(false);
+const reducer = (state, { type, payload }) => {
+  try {
+    switch (type) {
+      case ACTIONS.ADD_DIGIT:
+        if (state.overwrite) {
+          return {
+            ...state,
+            overwrite: false,
+            currentOperand: payload.digit
+          }
+        }
+        if (payload.digit === '0' && state.currentOperand === '0') return state
+        if (payload.digit === '.' && state.currentOperand.includes('.')) return state
+        return {
+          ...state,
+          currentOperand: `${state.currentOperand || ""}${payload.digit}`
+        }
+      case ACTIONS.CHOOSE_OPERATION:
+        if (state.currentOperand === undefined && state.previousOperand === undefined) return state
+        if (state.currentOperand === undefined) {
+          return {
+            ...state,
+            operation: payload.operation
+          }
+        }
+        if (state.previousOperand === undefined) {
+          return {
+            ...state,
+            operation: payload.operation,
+            previousOperand: state.currentOperand,
+            currentOperand: undefined
+          }
+        }
 
-  const inputNum = (evt) => {
-    if (currentValue.includes(".") && evt.target.innerText === ".") return;
+        return {
+          ...state,
+          operation: payload.operation,
+          previousOperand: evaluate(state),
+          currentOperand: undefined
+        }
+      case ACTIONS.DELETE_DIGIT:
+        if (state.overwrite) {
+          return {
+            ...state,
+            overwrite: false,
+            currentOperand: undefined
+          }
+        }
 
-    if (total) {
-      setPreValue("");
+        if (state.currentOperand === undefined) return state
+        if (state.currentOperand.length === 1) return { ...state, currentOperand: undefined }
+
+        return {
+          ...state,
+          currentOperand: state.currentOperand.slice(0, -1)
+        }
+      case ACTIONS.CLEAR:
+        return {}
+      case ACTIONS.EVALUATE:
+        if (state.previousOperand !== undefined && state.currentOperand !== undefined && state.operation !== undefined) {
+          return {
+            ...state,
+            operation: undefined,
+            overwrite: true,
+            previousOperand: undefined,
+            currentOperand: evaluate(state)
+          }
+        }
+        return state
+      default: return state
     }
-
-    currentValue 
-      ? setCurrentValue((pre) => pre + evt.target.innerText) 
-      : setCurrentValue(evt.target.innerText);
-    setTotal(false);
+  } catch (error) {
+    throw new Error(error)
   }
+}
 
-  useEffect(() => {
-    setScreen(currentValue);
-  }, [currentValue]);
-
-  useEffect(()=>{
-    setScreen("0");
-  }, []);
-
-  const operatorType = (evt) => {
-    setTotal(false);
-    setOperator(evt.target.innerText);
-    if (currentValue === "") return;
-    if(preValue !== "") {
-      equals();
-    } else {
-      setPreValue(currentValue);
-      setCurrentValue("");
-      }
-  };
-
-  const equals = (evt) => { 
-    if(evt?.target.innerText === "="){ 
-      setTotal(true);
+const evaluate = ({ currentOperand, previousOperand, operation }) => {
+  try {
+    const prev = parseFloat(previousOperand)
+    const current = parseFloat(currentOperand)
+    if (isNaN(prev) || isNaN(current)) return
+    let result
+    switch (operation) {
+      case '+':
+        result = prev + current
+        break
+      case '-':
+        result = prev - current
+        break
+      case '*':
+        result = prev * current
+        break
+      case '/':
+        result = prev / current
+        break
+      default: return
     }
 
-    let calculate;
-    switch (operator) {
-      case "/":
-        calculate = String(parseFloat(preValue) / parseFloat(currentValue));
-        break;
-      case "X":
-        calculate = String(parseFloat(preValue) * parseFloat(currentValue));
-        break;
-      case "-":
-        calculate = String(parseFloat(preValue) - parseFloat(currentValue));
-        break;
-      case "+":
-        calculate = String(parseFloat(preValue) + parseFloat(currentValue));
-        break;
-        default:
-          return
-    }
-    setScreen("");
-    setPreValue(calculate);
-    setCurrentValue("");
+    return result.toString()
+  } catch (error) {
+    throw new Error(error)
   }
+}
 
-  const minusPlus = () => {
-    if(currentValue.charAt(0) === "-"){
-      setCurrentValue(currentValue.substring(1));
-    } else {
-      setCurrentValue("-" + currentValue);
-    }
-  };
+const INTEGER_FORMATTER = new Intl.NumberFormat('de-DE', {
+  maximumFractionDigits: 0
+})
 
-  const percent = () => {
-    preValue
-      ? setCurrentValue(String((parseFloat(currentValue)/100)*preValue))
-      : setCurrentValue(String(parseFloat(currentValue) / 100));
-  };
+const formatOperand = (operand) => {
+  try {
+    if (operand === undefined) return
+    const [integer, decimal] = operand.split('.')
+    if (decimal === undefined) return INTEGER_FORMATTER.format(integer)
 
-  const reset = (() => { 
-    setPreValue("");
-    setCurrentValue("");
-    setScreen("0");
-  })
+    return `${INTEGER_FORMATTER.format(integer)},${INTEGER_FORMATTER.format(decimal)}`
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+const App =()=> {
+
+  const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(reducer, {})
 
   return (
-    <div className='calculator'>
-      <div className='wrapper'>
-        <div className='screenView'> 
-          {(screen !== "" || screen === "0") ? 
-            (
-              <NumberFormat
-                value={screen}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            ) 
-            : 
-            (
-              <NumberFormat
-                value={preValue}
-                displayType={"text"}
-                thousandSeparator={true}
-              />
-            )
-          }
-        </div>
-        <div className='btn blue' onClick={reset}>AC</div>
-        <div className='btn pink' onClick={minusPlus}>+/-</div>
-        <div className='btn pink' onClick={percent}>%</div>
-        <div className='btn orange' onClick={operatorType}>/</div>
-        <div className='btn gray' onClick={inputNum}>7</div>
-        <div className='btn gray' onClick={inputNum}>8</div>
-        <div className='btn gray' onClick={inputNum}>9</div>
-        <div className='btn orange' onClick={operatorType}>X</div>
-        <div className='btn gray' onClick={inputNum}>4</div>
-        <div className='btn gray' onClick={inputNum}>5</div>
-        <div className='btn gray' onClick={inputNum}>6</div>
-        <div className='btn orange' onClick={operatorType}>-</div>
-        <div className='btn gray' onClick={inputNum}>1</div>
-        <div className='btn gray' onClick={inputNum}>2</div>
-        <div className='btn gray' onClick={inputNum}>3</div>
-        <div className='btn orange' onClick={operatorType}>+</div>
-        <div className='btn zero' onClick={inputNum}>0</div>
-        <div className='btn gray' onClick={inputNum}>.</div>
-        <div className='btn gray' onClick={equals}>=</div>
+    <div className="calculator-grid">
+      <div className="output">
+        <div className="previous-operand">{formatOperand(previousOperand)} {operation} </div>
+        <div className="current-operand">{formatOperand(currentOperand)}</div>
       </div>
+      <button className="span-two" onClick={() => dispatch({ type: ACTIONS.CLEAR })}>AC</button>
+      <button onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}>DEL</button>
+      <OperationButton operation="/" dispatch={dispatch} />
+      <DigiButton digit="1" dispatch={dispatch} />
+      <DigiButton digit="2" dispatch={dispatch} />
+      <DigiButton digit="3" dispatch={dispatch} />
+      <OperationButton operation="*" dispatch={dispatch} />
+      <DigiButton digit="4" dispatch={dispatch} />
+      <DigiButton digit="5" dispatch={dispatch} />
+      <DigiButton digit="6" dispatch={dispatch} />
+      <OperationButton operation="+" dispatch={dispatch} />
+      <DigiButton digit="7" dispatch={dispatch} />
+      <DigiButton digit="8" dispatch={dispatch} />
+      <DigiButton digit="9" dispatch={dispatch} />
+      <OperationButton operation="-" dispatch={dispatch} />
+      <button onClick={() => dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: '.' } })} >,</button>
+      <DigiButton digit="0" dispatch={dispatch} />
+      <button className="span-two" onClick={() => dispatch({ type: ACTIONS.EVALUATE })}>=</button>
     </div>
-  );
+  )
 }
 
 export default App;

@@ -1,97 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
-
-* {
-  padding: 0;
-  margin: 0;
+*, *::before, *::after {
   box-sizing: border-box;
-  -webkit-user-drag: none;
-  -webkit-app-region: none;
 }
 
 body {
-  background-color: #bdbdbd;
+  margin: 0;
+  background: linear-gradient(to right, #365b7f, #ba6b86 );
+}
+
+.calculator-grid {
   display: grid;
-  place-content: center;
-  font-family: 'Roboto', sans-serif;
-  height: 100vh;
-  font-size: 2rem;
+  margin-top: 2rem;
+  justify-content: center;
+  grid-template-columns: repeat(4, 6rem);
+  grid-template-rows: minmax(7rem, auto) repeat(5, 6rem);
 }
 
-.calculator {
-  height: 80vh;
-  width: 50vh;
-  background-color: black;
-  border-radius: 1rem;
-  padding: 1rem;
-  -webkit-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-  -moz-box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-  box-shadow: 7px 7px 5px 0px rgba(50, 50, 50, 0.75);
-}
-
-.wrapper {
-  display: grid;
-  height: 100%;
-  width: 100%;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(6, 1fr);
-  gap: 12px;
-}
-
-.screenView {
-  grid-column: 1 / -1;
-  color: white;
-  text-align: right;
-  padding: 0.5rem;
-  font-size: 4rem;
-  overflow: hidden;
-}
-
-.btn {
-  display: grid;
-  place-content: center;
-  background-color: #3d3d3d;
-  border-radius: 50%;
-  color: white;
+.calculator-grid > button {
   cursor: pointer;
-  font-weight: bold;
+  font-size: 2rem;
+  border: 1px solid white;
+  outline: none;
+  background-color: rgba(255, 255, 255, .75);
 }
 
-.btn:hover {
-  background-color: gray;
+.calculator-grid > button:hover,
+.calculator-grid>button:focus {
+  background-color: rgba(255, 255, 255, .90);
 }
 
-.blue {
-  background-color: #3e5b7f;
+
+.span-two {
+  grid-column: span 2;
 }
 
-.blue:hover {
-  background-color: white;
-  color: #3e5b7f
+.output {
+ grid-column: 1 / -1;
+ background-color: rgba(61, 61, 61, 1);
+ display: flex;
+ flex-direction: column;
+ align-items: flex-end;
+ justify-content: space-around;
+ padding: .75rem;
+ word-wrap: break-word;
+ word-break: break-all;
 }
 
-.pink {
-  background-color: #c06c86;
+.output .previous-operand {
+  color: rgba(255, 255, 255, .75);
+}
+
+.output .current-operand {
   color: white;
-}
-
-.pink:hover {
-  background-color: white;
-  color: #f17680;
-}
-
-.orange {
-  background-color: #f8b18e;
-}
-
-.orange:hover {
-  background-color: white;
-  color: orange;
-}
-
-.zero {
-  grid-column: 1 / span 2;
-  border-radius: 25px;
-  /* place-content: unset;
-  align-items: center;
-  padding-left: 2rem; */
+  font-size: 2.5rem;
 }
